@@ -14,6 +14,15 @@ export default function TabsLayout() {
             }}
          />
          <Tabs.Screen
+            name="location"
+            options={{
+               title: 'Mi ubicación',
+               tabBarIcon: ({ color, size }) => (
+                  <Ionicons name="location-sharp" size={size} color={color} />
+               ),
+            }}
+         />
+         <Tabs.Screen
             name="favorites"
             options={{
                title: 'Favorites',

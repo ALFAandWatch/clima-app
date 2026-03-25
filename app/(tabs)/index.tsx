@@ -1,7 +1,6 @@
 import { ForecastCard } from '@/components/ForecastCard';
-import { DailyForecast } from '@/types/weather';
+import { useWeather } from '@/hooks/useWeather';
 import { getWeatherBackground } from '@/utils/getWeatherBackground';
-import { transformForecast } from '@/utils/transformForecast';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
@@ -14,10 +13,6 @@ import {
 } from 'react-native';
 import SearchBar from '../../components/SearchBar';
 import WeatherCard from '../../components/WeatherCard';
-import {
-   getForecastByCoords,
-   getWeatherByCoords,
-} from '../../services/weatherApi';
 
 type CityResult = {
    name: string;
@@ -27,10 +22,9 @@ type CityResult = {
 };
 
 export default function HomeScreen() {
-   const [weather, setWeather] = useState<any>(null);
-   const [loading, setLoading] = useState(false);
    const [history, setHistory] = useState<CityResult[]>([]);
-   const [forecast, setForecast] = useState<DailyForecast[] | null>(null);
+
+   const { weather, forecast, loading, error, fetchByCoords } = useWeather();
 
    useEffect(() => {
       loadLastCity();
@@ -38,35 +32,11 @@ export default function HomeScreen() {
    }, []);
 
    const handleSelectCity = async (city: CityResult) => {
-      setLoading(true);
+      await fetchByCoords(city.lat, city.lon);
 
-      const [weatherData, forecastData] = await Promise.all([
-         getWeatherByCoords(city.lat, city.lon),
-         getForecastByCoords(city.lat, city.lon),
-      ]);
-
-      if (!weatherData || weatherData.cod !== 200) {
-         alert('Error al obtener clima');
-         setLoading(false);
-         return;
-      }
-
-      if (!forecastData || forecastData.cod != 200) {
-         console.warn('Error en forecast');
-      }
-
-      // guardar última ciudad (objeto completo)
       await AsyncStorage.setItem('lastCity', JSON.stringify(city));
-
-      // guardar historial
       await saveToHistory(city);
       await loadHistory();
-
-      const parsedForecast = transformForecast(forecastData);
-
-      setWeather(weatherData);
-      setForecast(parsedForecast);
-      setLoading(false);
    };
 
    const loadLastCity = async () => {
