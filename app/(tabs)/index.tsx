@@ -1,98 +1,210 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { ForecastCard } from '@/components/ForecastCard';
+import { DailyForecast } from '@/types/weather';
+import { getWeatherBackground } from '@/utils/getWeatherBackground';
+import { transformForecast } from '@/utils/transformForecast';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useEffect, useState } from 'react';
+import {
+   ActivityIndicator,
+   ImageBackground,
+   ScrollView,
+   Text,
+   View,
+} from 'react-native';
+import SearchBar from '../../components/SearchBar';
+import WeatherCard from '../../components/WeatherCard';
+import {
+   getForecastByCoords,
+   getWeatherByCoords,
+} from '../../services/weatherApi';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+type CityResult = {
+   name: string;
+   country: string;
+   lat: number;
+   lon: number;
+};
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+   const [weather, setWeather] = useState<any>(null);
+   const [loading, setLoading] = useState(false);
+   const [history, setHistory] = useState<CityResult[]>([]);
+   const [forecast, setForecast] = useState<DailyForecast[] | null>(null);
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
+   useEffect(() => {
+      loadLastCity();
+      loadHistory();
+   }, []);
+
+   const handleSelectCity = async (city: CityResult) => {
+      setLoading(true);
+
+      const [weatherData, forecastData] = await Promise.all([
+         getWeatherByCoords(city.lat, city.lon),
+         getForecastByCoords(city.lat, city.lon),
+      ]);
+
+      if (!weatherData || weatherData.cod !== 200) {
+         alert('Error al obtener clima');
+         setLoading(false);
+         return;
+      }
+
+      if (!forecastData || forecastData.cod != 200) {
+         console.warn('Error en forecast');
+      }
+
+      // guardar última ciudad (objeto completo)
+      await AsyncStorage.setItem('lastCity', JSON.stringify(city));
+
+      // guardar historial
+      await saveToHistory(city);
+      await loadHistory();
+
+      const parsedForecast = transformForecast(forecastData);
+
+      setWeather(weatherData);
+      setForecast(parsedForecast);
+      setLoading(false);
+   };
+
+   const loadLastCity = async () => {
+      const stored = await AsyncStorage.getItem('lastCity');
+
+      if (!stored) return;
+
+      try {
+         const city = JSON.parse(stored);
+         handleSelectCity(city);
+      } catch (error) {
+         console.log('Formato viejo detectado, limpiando...');
+         await AsyncStorage.removeItem('lastCity');
+      }
+   };
+
+   const loadHistory = async () => {
+      const stored = await AsyncStorage.getItem('history');
+      const parsed = stored ? JSON.parse(stored) : [];
+      setHistory(parsed);
+   };
+
+   const addFavorite = async (city: CityResult) => {
+      const stored = await AsyncStorage.getItem('favorites');
+      let favorites: CityResult[] = stored ? JSON.parse(stored) : [];
+
+      const exists = favorites.some(
+         (c) => c.lat === city.lat && c.lon === city.lon
+      );
+
+      if (exists) {
+         alert('Ya está en favoritos');
+         return;
+      }
+
+      favorites.push(city);
+
+      await AsyncStorage.setItem('favorites', JSON.stringify(favorites));
+   };
+
+   const saveToHistory = async (city: CityResult) => {
+      const stored = await AsyncStorage.getItem('history');
+      let history: CityResult[] = stored ? JSON.parse(stored) : [];
+
+      // evitar duplicados por lat/lon
+      history = history.filter((c) => c.lat !== city.lat || c.lon !== city.lon);
+
+      history.unshift(city);
+      history = history.slice(0, 5);
+
+      await AsyncStorage.setItem('history', JSON.stringify(history));
+   };
+
+   return (
+      <LinearGradient
+         colors={['#89adef', '#ebf2ff']}
+         style={{ flex: 1, padding: 20, justifyContent: 'center' }}
+      >
+         <SearchBar onSelectCity={handleSelectCity} />
+
+         {history.length > 0 && (
+            <View style={{ marginVertical: 10 }}>
+               {history.map((item, index) => (
+                  <Text
+                     key={index}
+                     onPress={() => handleSelectCity(item)}
+                     style={{
+                        padding: 8,
+                        backgroundColor: '#ddd',
+                        marginBottom: 5,
+                        borderRadius: 8,
+                     }}
+                  >
+                     {item.name}, {item.country}
+                  </Text>
+               ))}
+            </View>
+         )}
+
+         {loading && <ActivityIndicator size="large" />}
+
+         {weather && (
+            <ImageBackground
+               source={getWeatherBackground(weather.weather[0].main)}
+               style={{
+                  borderRadius: 20,
+                  overflow: 'hidden',
+               }}
+               imageStyle={{
+                  borderRadius: 20,
+                  marginTop: 20,
+                  transform: [{ scale: 2 }],
+               }}
+               resizeMode="cover"
+            >
+               <View
+                  style={{
+                     backgroundColor: 'rgba(0,0,0,0.1)',
+                  }}
+               >
+                  <WeatherCard
+                     city={`${weather.name}, ${weather.sys.country}`}
+                     temperature={weather.main.temp}
+                     condition={weather.weather[0].main}
+                     humidity={weather.main.humidity}
+                     wind={weather.wind.speed}
+                     onAddFavorite={() =>
+                        addFavorite({
+                           name: weather.name,
+                           country: weather.sys.country,
+                           lat: weather.coord.lat,
+                           lon: weather.coord.lon,
+                        })
+                     }
+                  />
+               </View>
+            </ImageBackground>
+         )}
+
+         {forecast && (
+            <ScrollView
+               horizontal
+               showsHorizontalScrollIndicator={false}
+               contentContainerStyle={{ alignItems: 'flex-start' }}
+               style={{ marginTop: 20, flexGrow: 0 }}
+            >
+               {forecast.map((day) => (
+                  <ForecastCard
+                     key={day.date}
+                     date={day.date}
+                     tempMin={day.tempMin}
+                     tempMax={day.tempMax}
+                     condition={day.condition}
+                     description={day.description}
+                  />
+               ))}
+            </ScrollView>
+         )}
+      </LinearGradient>
+   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
