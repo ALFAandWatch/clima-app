@@ -68,7 +68,13 @@ export default function WeatherCard({
             />
          )}
          {onRemoveFavorite && (
-            <Button title="🗑 Eliminar" onPress={onRemoveFavorite} />
+            <Button
+               title="🗑 Eliminar"
+               onPress={(e) => {
+                  e.stopPropagation();
+                  onRemoveFavorite();
+               }}
+            />
          )}
       </View>
    );
@@ -86,6 +92,7 @@ const styles = StyleSheet.create({
       fontSize: 25,
       fontWeight: '600',
       marginBottom: 10,
+      fontFamily: 'Sora_600SemiBold',
       textAlign: 'center',
       color: '#fff',
       textShadowColor: 'rgba(0, 0, 0, 0.5)',
@@ -96,6 +103,7 @@ const styles = StyleSheet.create({
       fontSize: 54,
       fontWeight: 'bold',
       textAlign: 'center',
+      fontFamily: 'Sora_400Regular',
       color: '#fff',
       textShadowColor: 'rgba(0, 0, 0, 0.5)',
       textShadowOffset: { width: 1, height: 1 },

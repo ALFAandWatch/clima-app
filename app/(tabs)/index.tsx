@@ -1,16 +1,13 @@
 import { ForecastCard } from '@/components/ForecastCard';
+import { SkeletonCard } from '@/components/SkeletonCard';
+import { SkeletonWeatherCard } from '@/components/SkeletonWeatherCard';
 import { useWeather } from '@/hooks/useWeather';
 import { getWeatherBackground } from '@/utils/getWeatherBackground';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import {
-   ActivityIndicator,
-   ImageBackground,
-   ScrollView,
-   Text,
-   View,
-} from 'react-native';
+import { ImageBackground, ScrollView, Text, View } from 'react-native';
 import SearchBar from '../../components/SearchBar';
 import WeatherCard from '../../components/WeatherCard';
 
@@ -22,9 +19,16 @@ type CityResult = {
 };
 
 export default function HomeScreen() {
+   const params = useLocalSearchParams();
    const [history, setHistory] = useState<CityResult[]>([]);
 
    const { weather, forecast, loading, error, fetchByCoords } = useWeather();
+
+   useEffect(() => {
+      if (params.lat && params.lon) {
+         fetchByCoords(Number(params.lat), Number(params.lon));
+      }
+   }, [params.lat, params.lon]);
 
    useEffect(() => {
       loadLastCity();
@@ -116,44 +120,54 @@ export default function HomeScreen() {
             </View>
          )}
 
-         {loading && <ActivityIndicator size="large" />}
+         {loading && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+               {Array.from({ length: 5 }).map((_, i) => (
+                  <SkeletonCard key={i} />
+               ))}
+            </ScrollView>
+         )}
 
-         {weather && (
-            <ImageBackground
-               source={getWeatherBackground(weather.weather[0].main)}
-               style={{
-                  borderRadius: 20,
-                  overflow: 'hidden',
-               }}
-               imageStyle={{
-                  borderRadius: 20,
-                  marginTop: 20,
-                  transform: [{ scale: 2 }],
-               }}
-               resizeMode="cover"
-            >
-               <View
+         {loading ? (
+            <SkeletonWeatherCard />
+         ) : (
+            weather && (
+               <ImageBackground
+                  source={getWeatherBackground(weather.weather[0].main)}
                   style={{
-                     backgroundColor: 'rgba(0,0,0,0.1)',
+                     borderRadius: 20,
+                     overflow: 'hidden',
                   }}
+                  imageStyle={{
+                     borderRadius: 20,
+                     marginTop: 20,
+                     transform: [{ scale: 2 }],
+                  }}
+                  resizeMode="cover"
                >
-                  <WeatherCard
-                     city={`${weather.name}, ${weather.sys.country}`}
-                     temperature={weather.main.temp}
-                     condition={weather.weather[0].main}
-                     humidity={weather.main.humidity}
-                     wind={weather.wind.speed}
-                     onAddFavorite={() =>
-                        addFavorite({
-                           name: weather.name,
-                           country: weather.sys.country,
-                           lat: weather.coord.lat,
-                           lon: weather.coord.lon,
-                        })
-                     }
-                  />
-               </View>
-            </ImageBackground>
+                  <View
+                     style={{
+                        backgroundColor: 'rgba(0,0,0,0.1)',
+                     }}
+                  >
+                     <WeatherCard
+                        city={`${weather.name}, ${weather.sys.country}`}
+                        temperature={weather.main.temp}
+                        condition={weather.weather[0].main}
+                        humidity={weather.main.humidity}
+                        wind={weather.wind.speed}
+                        onAddFavorite={() =>
+                           addFavorite({
+                              name: weather.name,
+                              country: weather.sys.country,
+                              lat: weather.coord.lat,
+                              lon: weather.coord.lon,
+                           })
+                        }
+                     />
+                  </View>
+               </ImageBackground>
+            )
          )}
 
          {forecast && (
@@ -161,7 +175,12 @@ export default function HomeScreen() {
                horizontal
                showsHorizontalScrollIndicator={false}
                contentContainerStyle={{ alignItems: 'flex-start' }}
-               style={{ marginTop: 20, flexGrow: 0 }}
+               style={{
+                  marginTop: 20,
+                  paddingVertical: 20,
+                  paddingHorizontal: 5,
+                  flexGrow: 0,
+               }}
             >
                {forecast.map((day) => (
                   <ForecastCard

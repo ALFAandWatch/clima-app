@@ -2,11 +2,12 @@ import WeatherCard from '@/components/WeatherCard';
 import { getWeatherBackground } from '@/utils/getWeatherBackground';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
    FlatList,
    ImageBackground,
+   Pressable,
    StyleSheet,
    Text,
    View,
@@ -74,7 +75,8 @@ export default function FavoritesScreen() {
             style={{
                fontSize: 32,
                textAlign: 'center',
-               marginBottom: 20,
+               fontFamily: 'Sora_600SemiBold',
+               marginBottom: 16,
                fontWeight: '600',
                letterSpacing: 0.5,
             }}
@@ -82,48 +84,73 @@ export default function FavoritesScreen() {
             Favoritos
          </Text>
          {favoritesWeather.length === 0 ? (
-            <Text>No hay favoritos aún</Text>
+            <Text
+               style={{
+                  textAlign: 'center',
+                  fontFamily: 'Sora_400Regular',
+                  fontSize: 14,
+               }}
+            >
+               No hay favoritos aún
+            </Text>
          ) : (
             <FlatList
                data={favoritesWeather}
                keyExtractor={(item) => item.id.toString()}
                ItemSeparatorComponent={() => <View style={{ height: 20 }} />}
                renderItem={({ item }) => (
-                  <ImageBackground
-                     source={getWeatherBackground(item.weather[0].main)}
-                     style={{
-                        borderRadius: 20,
-                        overflow: 'hidden',
+                  <Pressable
+                     onPress={() => {
+                        router.push({
+                           pathname: '/',
+                           params: {
+                              lat: item.coord.lat,
+                              lon: item.coord.lon,
+                              name: item.name,
+                              country: item.sys.country,
+                           },
+                        });
                      }}
-                     imageStyle={{
-                        borderRadius: 20,
-                        marginTop: 20,
-                        transform: [{ scale: 2 }],
-                     }}
-                     resizeMode="cover"
+                     style={({ pressed }) => ({
+                        opacity: pressed ? 0.8 : 1,
+                     })}
                   >
-                     <View
+                     <ImageBackground
+                        source={getWeatherBackground(item.weather[0].main)}
                         style={{
-                           backgroundColor: 'rgba(0,0,0,0.1)',
+                           borderRadius: 20,
+                           overflow: 'hidden',
                         }}
+                        imageStyle={{
+                           borderRadius: 20,
+                           marginTop: 20,
+                           transform: [{ scale: 2 }],
+                        }}
+                        resizeMode="cover"
                      >
-                        <WeatherCard
-                           city={`${item.name}, ${item.sys.country}`}
-                           temperature={item.main.temp}
-                           condition={item.weather[0].main}
-                           humidity={item.main.humidity}
-                           wind={item.wind.speed}
-                           onRemoveFavorite={() =>
-                              removeFavorite({
-                                 name: item.name,
-                                 country: item.sys.country,
-                                 lat: item.coord.lat,
-                                 lon: item.coord.lon,
-                              })
-                           }
-                        />
-                     </View>
-                  </ImageBackground>
+                        <View
+                           style={{
+                              backgroundColor: 'rgba(0,0,0,0.1)',
+                           }}
+                        >
+                           <WeatherCard
+                              city={`${item.name}, ${item.sys.country}`}
+                              temperature={item.main.temp}
+                              condition={item.weather[0].main}
+                              humidity={item.main.humidity}
+                              wind={item.wind.speed}
+                              onRemoveFavorite={() =>
+                                 removeFavorite({
+                                    name: item.name,
+                                    country: item.sys.country,
+                                    lat: item.coord.lat,
+                                    lon: item.coord.lon,
+                                 })
+                              }
+                           />
+                        </View>
+                     </ImageBackground>
+                  </Pressable>
                )}
             />
          )}
