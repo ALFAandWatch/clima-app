@@ -1,3 +1,4 @@
+import { UnitProvider } from '@/context/UnitContext';
 import {
    Sora_400Regular,
    Sora_600SemiBold,
@@ -15,5 +16,9 @@ export default function RootLayout() {
 
    if (!fontsLoaded) return null;
 
-   return <Stack screenOptions={{ headerShown: false }} />;
+   return (
+      <UnitProvider>
+         <Stack screenOptions={{ headerShown: false }} />
+      </UnitProvider>
+   );
 }

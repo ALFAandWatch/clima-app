@@ -1,4 +1,5 @@
 import WeatherCard from '@/components/WeatherCard';
+import { useUnit } from '@/context/UnitContext';
 import { getWeatherBackground } from '@/utils/getWeatherBackground';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -24,10 +25,12 @@ type CityResult = {
 export default function FavoritesScreen() {
    const [favoritesWeather, setFavoritesWeather] = useState<any[]>([]);
 
+   const { unit } = useUnit();
+
    useFocusEffect(
       useCallback(() => {
          loadFavorites();
-      }, [])
+      }, [unit])
    );
 
    const loadFavorites = async () => {
@@ -44,7 +47,7 @@ export default function FavoritesScreen() {
 
       const results = await Promise.all(
          validCities.map((city: CityResult) =>
-            getWeatherByCoords(city.lat, city.lon)
+            getWeatherByCoords(city.lat, city.lon, unit)
          )
       );
 

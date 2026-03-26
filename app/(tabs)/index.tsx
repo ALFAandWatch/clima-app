@@ -1,6 +1,7 @@
 import { ForecastCard } from '@/components/ForecastCard';
 import { SkeletonCard } from '@/components/SkeletonCard';
 import { SkeletonWeatherCard } from '@/components/SkeletonWeatherCard';
+import { useUnit } from '@/context/UnitContext';
 import { useWeather } from '@/hooks/useWeather';
 import { getWeatherBackground } from '@/utils/getWeatherBackground';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -24,6 +25,8 @@ export default function HomeScreen() {
 
    const { weather, forecast, loading, error, fetchByCoords } = useWeather();
 
+   const { unit } = useUnit();
+
    useEffect(() => {
       if (params.lat && params.lon) {
          fetchByCoords(Number(params.lat), Number(params.lon));
@@ -34,6 +37,12 @@ export default function HomeScreen() {
       loadLastCity();
       loadHistory();
    }, []);
+
+   useEffect(() => {
+      if (weather?.coord) {
+         fetchByCoords(weather.coord.lat, weather.coord.lon);
+      }
+   }, [unit]);
 
    const handleSelectCity = async (city: CityResult) => {
       await fetchByCoords(city.lat, city.lon);

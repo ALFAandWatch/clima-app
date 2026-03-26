@@ -10,10 +10,14 @@ type CityResult = {
    lon: number;
 };
 
-export const getWeatherByCoords = async (lat: number, lon: number) => {
+export const getWeatherByCoords = async (
+   lat: number,
+   lon: number,
+   unit: 'metric' | 'imperial'
+) => {
    try {
       const response = await fetch(
-         `${WEATHER_BASE_URL}?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
+         `${WEATHER_BASE_URL}?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=${unit}`
       );
 
       if (!response.ok) {
@@ -47,10 +51,14 @@ export const searchCities = async (query: string): Promise<CityResult[]> => {
    }
 };
 
-export const getForecastByCoords = async (lat: number, lon: number) => {
+export const getForecastByCoords = async (
+   lat: number,
+   lon: number,
+   unit: 'metric' | 'imperial'
+) => {
    try {
       const response = await fetch(
-         `${FORECAST_BASE_URL}?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
+         `${FORECAST_BASE_URL}?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=${unit}`
       );
 
       if (!response.ok) {

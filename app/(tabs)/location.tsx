@@ -1,59 +1,48 @@
 import { ForecastCard } from '@/components/ForecastCard';
 import WeatherCard from '@/components/WeatherCard';
-import { getForecastByCoords, getWeatherByCoords } from '@/services/weatherApi';
-import { DailyForecast } from '@/types/weather';
+import { useUnit } from '@/context/UnitContext';
+import { useWeather } from '@/hooks/useWeather';
 import { getUserLocation } from '@/utils/getUserLocation';
 import { getWeatherBackground } from '@/utils/getWeatherBackground';
-import { transformForecast } from '@/utils/transformForecast';
 import { ImageBackground } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 
 export default function LocationScreen() {
-   const [weather, setWeather] = useState<any>(null);
-   const [loading, setLoading] = useState(true);
-   const [forecast, setForecast] = useState<DailyForecast[] | null>(null);
+   const { weather, forecast, loading, error, fetchByCoords } = useWeather();
+
+   const { unit } = useUnit();
 
    useFocusEffect(
       useCallback(() => {
-         loadWeather();
+         getLocationAndFetch();
       }, [])
    );
 
-   const loadWeather = async () => {
-      setLoading(true);
+   useEffect(() => {
+      if (weather?.coord) {
+         fetchByCoords(weather.coord.lat, weather.coord.lon);
+      }
+   }, [unit]);
+
+   const getLocationAndFetch = async () => {
       try {
          const { lat, lon } = await getUserLocation();
-
-         const [weatherData, forecastData] = await Promise.all([
-            getWeatherByCoords(lat, lon),
-            getForecastByCoords(lat, lon),
-         ]);
-
-         if (!weatherData || weatherData.cod !== 200) {
-            alert('Error al obtener clima');
-            setLoading(false);
-            return;
-         }
-
-         if (!forecastData || forecastData.cod != 200) {
-            console.warn('Error en forecast');
-         }
-
-         const parsedForecast = transformForecast(forecastData);
-
-         setWeather(weatherData);
-         setForecast(parsedForecast);
+         fetchByCoords(lat, lon);
       } catch (error) {
          console.error(error);
-      } finally {
-         setLoading(false);
       }
    };
 
-   if (!weather) return <Text>No se pudo obtener ubicación</Text>;
+   if (loading) {
+      return <ActivityIndicator size="large" />;
+   }
+
+   if (!weather) {
+      return <Text>No se pudo obtener ubicación</Text>;
+   }
 
    return (
       <LinearGradient

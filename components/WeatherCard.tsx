@@ -1,3 +1,4 @@
+import { useUnit } from '@/context/UnitContext';
 import { getWeatherIcon } from '@/utils/getWeatherIcon';
 import { useState } from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
@@ -25,6 +26,10 @@ export default function WeatherCard({
    const icon = getWeatherIcon(condition);
    const [added, setAdded] = useState(false);
 
+   const { unit } = useUnit();
+
+   const tempUnit = unit === 'metric' ? '°C' : '°F';
+
    const handleAdd = () => {
       if (!onAddFavorite) return;
 
@@ -50,7 +55,10 @@ export default function WeatherCard({
             }}
          >
             {/* Temperatura */}
-            <Text style={styles.temp}>{Math.round(temperature)}°C</Text>
+            <Text style={styles.temp}>
+               {Math.round(temperature)}
+               {tempUnit}
+            </Text>
 
             {/* Icono */}
             <Text style={styles.icon}>{icon}</Text>
