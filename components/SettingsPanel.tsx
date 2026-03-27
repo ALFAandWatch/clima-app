@@ -1,8 +1,10 @@
+import { useTheme } from '@/context/ThemeContext';
 import { useUnit } from '@/context/UnitContext';
 import { Pressable, Text, View } from 'react-native';
 
 export const SettingsPanel = ({ onClose }: any) => {
    const { unit, toggleUnit } = useUnit();
+   const { theme, toggleTheme } = useTheme();
 
    return (
       <View
@@ -20,6 +22,10 @@ export const SettingsPanel = ({ onClose }: any) => {
          }}
       >
          <Text style={{ fontSize: 20, marginBottom: 20 }}>Settings</Text>
+
+         <Pressable onPress={toggleTheme}>
+            <Text>Tema: {theme === 'light' ? 'Claro' : 'Oscuro'}</Text>
+         </Pressable>
 
          <Pressable onPress={toggleUnit}>
             <Text>Unidad: {unit === 'metric' ? 'Celsius' : 'Fahrenheit'}</Text>

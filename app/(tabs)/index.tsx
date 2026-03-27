@@ -1,9 +1,11 @@
 import { ForecastCard } from '@/components/ForecastCard';
 import { SkeletonCard } from '@/components/SkeletonCard';
 import { SkeletonWeatherCard } from '@/components/SkeletonWeatherCard';
+import { useTheme } from '@/context/ThemeContext';
 import { useUnit } from '@/context/UnitContext';
 import { useWeather } from '@/hooks/useWeather';
 import { getWeatherBackground } from '@/utils/getWeatherBackground';
+import { themeColors } from '@/utils/themeColors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams } from 'expo-router';
@@ -26,6 +28,9 @@ export default function HomeScreen() {
    const { weather, forecast, loading, error, fetchByCoords } = useWeather();
 
    const { unit } = useUnit();
+
+   const { theme } = useTheme();
+   const colors = themeColors[theme];
 
    useEffect(() => {
       if (params.lat && params.lon) {
@@ -105,7 +110,9 @@ export default function HomeScreen() {
 
    return (
       <LinearGradient
-         colors={['#89adef', '#ebf2ff']}
+         colors={
+            theme === 'light' ? ['#89adef', '#ebf2ff'] : ['#334155', '#020617']
+         }
          style={{ flex: 1, padding: 20, justifyContent: 'center' }}
       >
          <SearchBar onSelectCity={handleSelectCity} />
@@ -118,9 +125,10 @@ export default function HomeScreen() {
                      onPress={() => handleSelectCity(item)}
                      style={{
                         padding: 8,
-                        backgroundColor: '#ddd',
+                        backgroundColor: colors.historyItem,
                         marginBottom: 5,
                         borderRadius: 8,
+                        color: colors.text,
                      }}
                   >
                      {item.name}, {item.country}
@@ -156,7 +164,7 @@ export default function HomeScreen() {
                >
                   <View
                      style={{
-                        backgroundColor: 'rgba(0,0,0,0.1)',
+                        backgroundColor: colors.cardOverlay,
                      }}
                   >
                      <WeatherCard
@@ -192,14 +200,20 @@ export default function HomeScreen() {
                }}
             >
                {forecast.map((day) => (
-                  <ForecastCard
-                     key={day.date}
-                     date={day.date}
-                     tempMin={day.tempMin}
-                     tempMax={day.tempMax}
-                     condition={day.condition}
-                     description={day.description}
-                  />
+                  <View
+                     style={{
+                        backgroundColor: colors.cardOverlay,
+                     }}
+                  >
+                     <ForecastCard
+                        key={day.date}
+                        date={day.date}
+                        tempMin={day.tempMin}
+                        tempMax={day.tempMax}
+                        condition={day.condition}
+                        description={day.description}
+                     />
+                  </View>
                ))}
             </ScrollView>
          )}

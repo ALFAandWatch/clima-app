@@ -1,6 +1,8 @@
 import WeatherCard from '@/components/WeatherCard';
+import { useTheme } from '@/context/ThemeContext';
 import { useUnit } from '@/context/UnitContext';
 import { getWeatherBackground } from '@/utils/getWeatherBackground';
+import { themeColors } from '@/utils/themeColors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect } from 'expo-router';
@@ -26,6 +28,9 @@ export default function FavoritesScreen() {
    const [favoritesWeather, setFavoritesWeather] = useState<any[]>([]);
 
    const { unit } = useUnit();
+
+   const { theme } = useTheme();
+   const colors = themeColors[theme];
 
    useFocusEffect(
       useCallback(() => {
@@ -71,7 +76,9 @@ export default function FavoritesScreen() {
 
    return (
       <LinearGradient
-         colors={['#89adef', '#ebf2ff']}
+         colors={
+            theme === 'light' ? ['#89adef', '#ebf2ff'] : ['#334155', '#020617']
+         }
          style={{ flex: 1, padding: 20, justifyContent: 'center' }}
       >
          <Text
@@ -82,6 +89,7 @@ export default function FavoritesScreen() {
                marginBottom: 16,
                fontWeight: '600',
                letterSpacing: 0.5,
+               color: colors.text,
             }}
          >
             Favoritos
@@ -133,7 +141,7 @@ export default function FavoritesScreen() {
                      >
                         <View
                            style={{
-                              backgroundColor: 'rgba(0,0,0,0.1)',
+                              backgroundColor: colors.cardOverlay,
                            }}
                         >
                            <WeatherCard

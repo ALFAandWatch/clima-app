@@ -1,3 +1,4 @@
+import { ThemeProvider } from '@/context/ThemeContext';
 import { UnitProvider } from '@/context/UnitContext';
 import {
    Sora_400Regular,
@@ -17,8 +18,10 @@ export default function RootLayout() {
    if (!fontsLoaded) return null;
 
    return (
-      <UnitProvider>
-         <Stack screenOptions={{ headerShown: false }} />
-      </UnitProvider>
+      <ThemeProvider>
+         <UnitProvider>
+            <Stack screenOptions={{ headerShown: false }} />
+         </UnitProvider>
+      </ThemeProvider>
    );
 }

@@ -1,5 +1,7 @@
+import { useTheme } from '@/context/ThemeContext';
 import { useUnit } from '@/context/UnitContext';
 import { getWeatherIcon } from '@/utils/getWeatherIcon';
+import { themeColors } from '@/utils/themeColors';
 import { useState } from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import { getCardBackground } from '../utils/getCardBackground';
@@ -28,6 +30,9 @@ export default function WeatherCard({
 
    const { unit } = useUnit();
 
+   const { theme } = useTheme();
+   const colors = themeColors[theme];
+
    const tempUnit = unit === 'metric' ? '°C' : '°F';
 
    const handleAdd = () => {
@@ -39,12 +44,14 @@ export default function WeatherCard({
       setTimeout(() => setAdded(false), 2000);
    };
 
-   const colors = getCardBackground(condition);
+   const cardBackground = getCardBackground(condition);
 
    return (
       <View style={[styles.card]}>
          {/* Ciudad */}
-         <Text style={styles.city}>{city}</Text>
+         <Text style={[styles.city, { color: colors.weatherCardText }]}>
+            {city}
+         </Text>
 
          <View
             style={{
@@ -55,7 +62,7 @@ export default function WeatherCard({
             }}
          >
             {/* Temperatura */}
-            <Text style={styles.temp}>
+            <Text style={[styles.temp, { color: colors.weatherCardText }]}>
                {Math.round(temperature)}
                {tempUnit}
             </Text>
@@ -100,9 +107,9 @@ const styles = StyleSheet.create({
       fontSize: 25,
       fontWeight: '600',
       marginBottom: 10,
+      color: '#fff',
       fontFamily: 'Sora_600SemiBold',
       textAlign: 'center',
-      color: '#fff',
       textShadowColor: 'rgba(0, 0, 0, 0.5)',
       textShadowOffset: { width: 1, height: 1 },
       textShadowRadius: 3,

@@ -1,3 +1,5 @@
+import { useTheme } from '@/context/ThemeContext';
+import { themeColors } from '@/utils/themeColors';
 import { useState } from 'react';
 import {
    FlatList,
@@ -23,6 +25,9 @@ export default function SearchBar({ onSelectCity }: Props) {
    const [query, setQuery] = useState('');
    const [results, setResults] = useState<CityResult[]>([]);
 
+   const { theme } = useTheme();
+   const colors = themeColors[theme];
+
    const handleChange = async (text: string) => {
       setQuery(text);
 
@@ -42,9 +47,12 @@ export default function SearchBar({ onSelectCity }: Props) {
             onChangeText={handleChange}
             placeholder="Buscar ciudad..."
             style={{
-               backgroundColor: '#fff',
+               backgroundColor: colors.background,
                padding: 10,
                borderRadius: 10,
+               borderColor: colors.border,
+               borderWidth: 2,
+               color: colors.text,
             }}
          />
 
@@ -64,9 +72,9 @@ export default function SearchBar({ onSelectCity }: Props) {
                         setResults([]);
                         onSelectCity(item); // 👈 importante
                      }}
-                     style={{ padding: 10 }}
+                     style={{ padding: 10, backgroundColor: colors.dropdown }}
                   >
-                     <Text>
+                     <Text style={{ color: colors.text }}>
                         {item.name}, {item.country}
                      </Text>
                   </TouchableOpacity>

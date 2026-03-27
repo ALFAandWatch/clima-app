@@ -1,0 +1,26 @@
+export const themeColors = {
+   light: {
+      background: '#ebf2ff',
+      text: '#000',
+      card: 'rgba(233, 235, 255, 0.8)',
+      border: 'rgba(0, 0, 0, 0)',
+      dropdown: '#ebf2ff',
+      historyItem: '#d1e3ff',
+      cardOverlay: 'rgba(0, 0, 0, 0.1)',
+      forecastCard: 'rgb(220, 234, 254)',
+      weatherCardText: '#fcfcfc',
+      headerBackground: '#89adef',
+   },
+   dark: {
+      background: '#0f172a',
+      text: '#d2d2d2',
+      card: 'rgba(30, 41, 59, 0.8)',
+      border: '#edeeff',
+      dropdown: '#3b3b3b',
+      historyItem: '#5a5a5a',
+      cardOverlay: 'rgba(0, 0, 0, 0.4)',
+      forecastCard: '#5a5a5a',
+      weatherCardText: '#e8e8e8',
+      headerBackground: '#334155',
+   },
+};

@@ -1,4 +1,6 @@
+import { useTheme } from '@/context/ThemeContext';
 import { getWeatherIcon } from '@/utils/getWeatherIcon';
+import { themeColors } from '@/utils/themeColors';
 import { StyleSheet, Text, View } from 'react-native';
 
 type ForecastCardProps = {
@@ -22,21 +24,28 @@ export const ForecastCard = ({
 
    const icon = getWeatherIcon(condition);
 
+   const { theme } = useTheme();
+   const colors = themeColors[theme];
+
    return (
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: colors.forecastCard }]}>
          {/* Día */}
-         <Text style={styles.day}>{formattedDate}</Text>
+         <Text style={[styles.day, { color: colors.text }]}>
+            {formattedDate}
+         </Text>
 
          {/* Icono */}
          <Text style={styles.icon}>{icon}</Text>
 
          {/* Temperaturas */}
-         <Text style={styles.temp}>
+         <Text style={[styles.temp, { color: colors.text }]}>
             {Math.round(tempMax)}° / {Math.round(tempMin)}°
          </Text>
 
          {/* Descripción */}
-         <Text style={styles.description}>{description}</Text>
+         <Text style={[styles.description, { color: colors.text }]}>
+            {description}
+         </Text>
       </View>
    );
 };
@@ -46,7 +55,6 @@ const styles = StyleSheet.create({
       padding: 10,
       alignItems: 'center',
       marginRight: 10,
-      backgroundColor: '#E9EBFF',
       borderRadius: 10,
       width: 150,
 
