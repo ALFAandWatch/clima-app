@@ -71,8 +71,12 @@ export default function WeatherCard({
             <Text style={styles.icon}>{icon}</Text>
          </View>
          <View style={styles.extra}>
-            <Text style={styles.extraText}>💧 {humidity}%</Text>
-            <Text style={styles.extraText}>🌬 {wind} m/s</Text>
+            <Text style={[styles.extraText, { color: colors.weatherCardText }]}>
+               💧 {humidity}%
+            </Text>
+            <Text style={[styles.extraText, { color: colors.weatherCardText }]}>
+               🌬 {wind} m/s
+            </Text>
          </View>
 
          {/* Botones */}
@@ -153,7 +157,6 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
    },
    extraText: {
-      color: '#fff',
       fontSize: 22,
       textShadowColor: 'rgba(0, 0, 0, 0.5)',
       textShadowOffset: { width: 1, height: 1 },

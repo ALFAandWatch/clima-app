@@ -46,6 +46,7 @@ export default function SearchBar({ onSelectCity }: Props) {
             value={query}
             onChangeText={handleChange}
             placeholder="Buscar ciudad..."
+            placeholderTextColor={colors.text}
             style={{
                backgroundColor: colors.background,
                padding: 10,

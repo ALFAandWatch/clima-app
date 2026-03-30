@@ -200,13 +200,8 @@ export default function HomeScreen() {
                }}
             >
                {forecast.map((day) => (
-                  <View
-                     style={{
-                        backgroundColor: colors.cardOverlay,
-                     }}
-                  >
+                  <View key={day.date}>
                      <ForecastCard
-                        key={day.date}
                         date={day.date}
                         tempMin={day.tempMin}
                         tempMax={day.tempMax}
